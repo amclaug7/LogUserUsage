@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#Andrew McLaughlin
+#8Sep18
+#Log User Usage
+
+#Query for user
+read -p “Enter Username:” USER
+
+#Check login status
+TEST=`who | grep $USER`
+
+#Conditionally create file
+if [ -z “$TEST” ]
+then
+	LASTLOGIN=`lastlog | grep $USER | cut -c44-62`
+	echo The user $USER was last logged in $LASTLOGIN > info.txt
+else
+	CHOUR=`date +%H`
+	LHOUR=`lastlog | grep $USER | cut -c55-56` 
+CMINUTE=`date +%M`
+	LMINUTE=`lastlog | grep $USER | cut -c58-59`
+CSECOND=`date +%S`
+	LSECOND=`lastlog | grep $USER | cut -c61-62`
+#Check minute for overflow
+	if [ “$(($CMINUTE-$LMINUTE))” -le “0” ]
+	then
+		EMINUTE=`echo $(($CMINUTE-$LMINUTE+60))`
+	else
+		EMINUTE=`echo $(($CMINUTE-$LMINUTE))`
+	fi
+#Check second for overflow
+if [ “$(($CSECOND-$LSECOND))” -le “0” ]
+		then
+		ESECOND=`echo $(($CSECOND-$LSECOND+60))`
+	else
+		ESECOND=`echo $(($CSECOND-$LSECOND))`
+	fi
+	ELAPSEDTIME=`echo $(($CHOUR-$LHOUR)):$EMINUTE:$ESECOND`
+	echo It is now $CHOUR:$CMINUTE:$CSECOND > info.txt
+	echo The user $USER has been logged on for $ELAPSEDTIME and is still logged in >> info.txt
+fi
